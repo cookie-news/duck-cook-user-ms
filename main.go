@@ -1,19 +1,14 @@
 package main
 
 import (
-	"duck-cook-user-ms/api"
-	"duck-cook-user-ms/db"
-	"log"
-
-	"github.com/joho/godotenv"
+	"fmt"
+	"os"
 )
 
 func main() {
-	err := godotenv.Load()
-
+	appConfig := NewAppConfig()
+	err := appConfig.Server.Start(os.Getenv("PORT"))
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println("Erro ao iniciar o servidor:", err)
 	}
-
-	api.Start("3001", db.ConnectMongo())
 }

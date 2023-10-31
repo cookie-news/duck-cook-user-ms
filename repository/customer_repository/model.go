@@ -1,4 +1,4 @@
-package model
+package customerrepository
 
 import (
 	"duck-cook-user-ms/entity"
