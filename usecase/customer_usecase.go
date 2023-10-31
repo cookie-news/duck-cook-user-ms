@@ -37,6 +37,9 @@ func (usecase customerUsecaseImpl) CreateCustomer(customer entity.Customer) (cus
 }
 
 func (usecase customerUsecaseImpl) GetCustomerByField(fieldName string, value string) (customer entity.Customer, err error) {
+	if fieldName == "" || value == "" {
+		return customer, err
+	}
 
 	result, err := usecase.customerRepository.GetCustomerByField(fieldName, value)
 	if err != nil {

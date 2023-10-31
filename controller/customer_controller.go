@@ -34,3 +34,17 @@ func (c *Controller) ListCustomersHandle(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, customers)
 }
+
+func (c *Controller) GetUserByFieldHandle(ctx *gin.Context) {
+	var fieldName = ctx.Param("fieldName")
+	var value = ctx.Param("value")
+
+	customer, err := c.customerUsecase.GetCustomerByField(fieldName, value)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, customer)
+}
