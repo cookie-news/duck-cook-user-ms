@@ -1,10 +1,32 @@
 package entity
 
+import "mime/multipart"
+
 type Customer struct {
-	ID               string `json:"id"`
-	Email            string `json:"email"`
-	User             string `json:"user"`
-	Pass             string `json:"pass"`
-	Name             string `json:"name"`
-	ImageProfilePath string `json:"image_profile_path"`
+	ID    string                `form:"id"`
+	Email string                `form:"email" binding:"required"`
+	User  string                `form:"user" binding:"required"`
+	Pass  string                `form:"pass" binding:"required"`
+	Name  string                `form:"name" binding:"required"`
+	Image *multipart.FileHeader `form:"image"`
+}
+
+type CustomerResponse struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	User  string `json:"user"`
+	Pass  string `json:"pass"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
+func (customer Customer) ToResponseEntity() CustomerResponse {
+	return CustomerResponse{
+		ID:    customer.ID,
+		Email: customer.Email,
+		User:  customer.User,
+		Pass:  customer.Pass,
+		Name:  customer.Name,
+		Image: "",
+	}
 }

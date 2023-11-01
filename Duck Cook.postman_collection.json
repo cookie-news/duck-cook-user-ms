@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "bb92bbcb-b188-46af-971a-9ae5d90f2b35",
+		"name": "Duck Cook",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5575094"
+	},
+	"item": [
+		{
+			"name": "duck-cook-user-ms",
+			"item": [
+				{
+					"name": "list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/customer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"customer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create customer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/customer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"customer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user by field",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/customer/email/luidin@gmail.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"customer",
+								"email",
+								"luidin@gmail.com"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

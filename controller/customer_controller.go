@@ -9,24 +9,34 @@ import (
 
 func (c *Controller) CreateCustomerHandle(ctx *gin.Context) {
 	var customer entity.Customer
-	if err := ctx.ShouldBindJSON(&customer); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao decodificar o JSON"})
+
+	if err := ctx.ShouldBind(&customer); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	_, err := c.customerUsecase.CreateCustomer(customer)
+	customerResponse, err := c.customerUsecase.CreateCustomer(customer)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{
-		"customer": customer,
-	})
+	url, err := c.customerUsecase.UploadImage(*customer.Image, customer.User)
+
+	if err != nil {
+		ctx.JSON(http.StatusCreated, gin.H{
+			"customer": customer,
+			"error":    "An error occurred while saving your profile photo, but the username was created successfully",
+		})
+	}
+
+	customerResponse.Image = url
+	ctx.JSON(http.StatusCreated, customerResponse)
 }
 
 func (c *Controller) ListCustomersHandle(ctx *gin.Context) {
 	customers, err := c.customerUsecase.ListCustomers()
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

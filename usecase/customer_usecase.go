@@ -4,29 +4,41 @@ import (
 	"duck-cook-user-ms/api/repository"
 	"duck-cook-user-ms/entity"
 	"errors"
+	"mime/multipart"
 	"regexp"
+	"strings"
 )
 
 type CustomerUsecase interface {
-	ListCustomers() ([]entity.Customer, error)
-	GetCustomerByField(fieldName string, value string) (entity.Customer, error)
-	CreateCustomer(customer entity.Customer) (entity.Customer, error)
+	ListCustomers() ([]entity.CustomerResponse, error)
+	GetCustomerByField(fieldName string, value string) (entity.CustomerResponse, error)
+	CreateCustomer(customer entity.Customer) (entity.CustomerResponse, error)
 	Validate(customer entity.Customer) (err error)
+	UploadImage(image multipart.FileHeader, user string) (string, error)
 }
 
 type customerUsecaseImpl struct {
 	customerRepository repository.CustomerRepository
+	customerStorage    repository.CustomerStorage
 }
 
-func (usecase customerUsecaseImpl) ListCustomers() (customersList []entity.Customer, err error) {
-	customers, err := usecase.customerRepository.ListCustomers()
+func (usecase customerUsecaseImpl) ListCustomers() (customersList []entity.CustomerResponse, err error) {
+	result, err := usecase.customerRepository.ListCustomers()
+	var customers []entity.CustomerResponse
 	if err != nil {
 		return
 	}
+
+	for _, customer := range result {
+		imageUrl := usecase.customerStorage.GetPublicUrl(customer.User)
+		customer.Image = imageUrl
+		customers = append(customers, customer)
+	}
+
 	return customers, err
 }
 
-func (usecase customerUsecaseImpl) CreateCustomer(customer entity.Customer) (customerResult entity.Customer, err error) {
+func (usecase customerUsecaseImpl) CreateCustomer(customer entity.Customer) (customerResult entity.CustomerResponse, err error) {
 	err = usecase.Validate(customer)
 
 	if err != nil {
@@ -36,7 +48,7 @@ func (usecase customerUsecaseImpl) CreateCustomer(customer entity.Customer) (cus
 	return usecase.customerRepository.CreateCustomer(customer)
 }
 
-func (usecase customerUsecaseImpl) GetCustomerByField(fieldName string, value string) (customer entity.Customer, err error) {
+func (usecase customerUsecaseImpl) GetCustomerByField(fieldName string, value string) (customer entity.CustomerResponse, err error) {
 	if fieldName == "" || value == "" {
 		return customer, err
 	}
@@ -46,7 +58,22 @@ func (usecase customerUsecaseImpl) GetCustomerByField(fieldName string, value st
 		return
 	}
 
+	imageUrl := usecase.customerStorage.GetPublicUrl(result.User)
+	result.Image = imageUrl
 	return result, err
+}
+
+func (usecase customerUsecaseImpl) UploadImage(image multipart.FileHeader, user string) (url string, err error) {
+	key, err := usecase.customerStorage.UploadImage(image, user)
+	if err != nil {
+		return
+	}
+	parts := strings.Split(key, "/")
+	filename := parts[len(parts)-1]
+
+	url = usecase.customerStorage.GetPublicUrl(filename)
+
+	return url, err
 }
 
 var (
@@ -91,8 +118,9 @@ func checkEmail(email string) bool {
 	return regex.MatchString(email)
 }
 
-func NewCustomerUseCase(customerRepository repository.CustomerRepository) CustomerUsecase {
+func NewCustomerUseCase(customerRepository repository.CustomerRepository, customerStorage repository.CustomerStorage) CustomerUsecase {
 	return &customerUsecaseImpl{
 		customerRepository,
+		customerStorage,
 	}
 }

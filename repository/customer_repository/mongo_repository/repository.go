@@ -1,10 +1,10 @@
-package customerrepository
+package mongodb_repository
 
 import (
 	"context"
 	"duck-cook-user-ms/api/repository"
-	"duck-cook-user-ms/db"
 	"duck-cook-user-ms/entity"
+	"duck-cook-user-ms/pkg/mongodb"
 	"errors"
 	"log"
 	"regexp"
@@ -25,67 +25,30 @@ func doTimeout() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 10*time.Second)
 }
 
-func (r repositoryImpl) GetCustomerByEmail(email string) (customer entity.Customer, err error) {
+func (r repositoryImpl) GetCustomerByField(fieldName string, value string) (customer entity.CustomerResponse, err error) {
 	ctx, cancel := doTimeout()
 
 	defer cancel()
 
 	var customerModel Customer
-	var customerEntity entity.Customer
-
-	filter := bson.M{"email": email}
-
-	err = r.customerCollection.FindOne(ctx, filter).Decode(&customerModel)
-	if err != nil {
-		return customerEntity, err
-	}
-
-	return customerModel.ToEntityCustomer(), err
-}
-
-func (r repositoryImpl) GetCustomerByUser(user string) (customer entity.Customer, err error) {
-	ctx, cancel := doTimeout()
-
-	defer cancel()
-
-	var customerModel Customer
-	var customerEntity entity.Customer
-
-	filter := bson.M{"user": user}
-
-	err = r.customerCollection.FindOne(ctx, filter).Decode(&customerModel)
-	if err != nil {
-		return customerEntity, err
-	}
-
-	return customerModel.ToEntityCustomer(), err
-}
-
-func (r repositoryImpl) GetCustomerByField(fieldName string, value string) (customer entity.Customer, err error) {
-	ctx, cancel := doTimeout()
-
-	defer cancel()
-
-	var customerModel Customer
-	var customerEntity entity.Customer
 
 	filter := bson.M{fieldName: value}
 
 	err = r.customerCollection.FindOne(ctx, filter).Decode(&customerModel)
 	if err != nil {
-		return customerEntity, err
+		return entity.CustomerResponse{}, err
 	}
 
-	return customerModel.ToEntityCustomer(), err
+	return customerModel.ToEntityCustomerResponse(), err
 }
 
-func (r repositoryImpl) ListCustomers() (customer []entity.Customer, err error) {
+func (r repositoryImpl) ListCustomers() (customer []entity.CustomerResponse, err error) {
 	ctx, cancel := doTimeout()
 
 	defer cancel()
 
 	var customersModel []Customer
-	var customerEntity []entity.Customer = []entity.Customer{}
+	var customerEntity []entity.CustomerResponse = []entity.CustomerResponse{}
 
 	cursor, err := r.customerCollection.Find(ctx, bson.D{})
 	if err != nil {
@@ -100,13 +63,13 @@ func (r repositoryImpl) ListCustomers() (customer []entity.Customer, err error) 
 	}
 
 	for _, customer := range customersModel {
-		customerEntity = append(customerEntity, customer.ToEntityCustomer())
+		customerEntity = append(customerEntity, customer.ToEntityCustomerResponse())
 	}
 
 	return customerEntity, nil
 }
 
-func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.Customer, error) {
+func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.CustomerResponse, error) {
 	ctx, cancel := doTimeout()
 	defer cancel()
 
@@ -115,7 +78,7 @@ func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.Custome
 	passHash, err := HashPassword(customer.Pass)
 
 	if err != nil {
-		return customerModel.ToEntityCustomer(), err
+		return customerModel.ToEntityCustomerResponse(), err
 	}
 
 	customerModel.Pass = passHash
@@ -135,7 +98,7 @@ func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.Custome
 						match := re.FindStringSubmatch(fieldInfo)
 						if len(match) >= 2 {
 							fieldName := match[1]
-							return customerModel.ToEntityCustomer(), errors.New("duplicate " + fieldName)
+							return customerModel.ToEntityCustomerResponse(), errors.New("duplicate " + fieldName)
 						}
 					}
 
@@ -150,7 +113,7 @@ func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.Custome
 
 	customerModel.ID = res.InsertedID.(primitive.ObjectID)
 
-	return customerModel.ToEntityCustomer(), nil
+	return customerModel.ToEntityCustomerResponse(), nil
 }
 
 func HashPassword(password string) (string, error) {
@@ -159,6 +122,6 @@ func HashPassword(password string) (string, error) {
 }
 
 func New(mongoDb mongo.Database) repository.CustomerRepository {
-	customerCollection := mongoDb.Collection(db.COLLECTION_CUSTOMER)
+	customerCollection := mongoDb.Collection(mongodb.COLLECTION_CUSTOMER)
 	return &repositoryImpl{customerCollection}
 }
