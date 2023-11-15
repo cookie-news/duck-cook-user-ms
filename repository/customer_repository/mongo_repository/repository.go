@@ -43,7 +43,7 @@ func (r repositoryImpl) GetCustomerByField(fieldName string, value string) (cust
 
 	filter := bson.M{fieldName: value}
 	if fieldName == "_id" {
-		id, _ := primitive.ObjectIDFromHex(fieldName)
+		id, _ := primitive.ObjectIDFromHex(value)
 		filter = bson.M{fieldName: id}
 	}
 
