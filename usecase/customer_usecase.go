@@ -15,11 +15,16 @@ type CustomerUsecase interface {
 	CreateCustomer(customer entity.Customer) (entity.CustomerResponse, error)
 	Validate(customer entity.Customer) (err error)
 	UploadImage(image multipart.FileHeader, user string) (string, error)
+	DeleteCustomer(idCustomer string) error
 }
 
 type customerUsecaseImpl struct {
 	customerRepository repository.CustomerRepository
 	customerStorage    repository.CustomerStorage
+}
+
+func (usecase customerUsecaseImpl) DeleteCustomer(idCustomer string) error {
+	return usecase.customerRepository.DeleteCustomer(idCustomer)
 }
 
 func (usecase customerUsecaseImpl) ListCustomers() (customersList []entity.CustomerResponse, err error) {

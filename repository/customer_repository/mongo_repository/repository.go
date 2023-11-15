@@ -21,6 +21,16 @@ type repositoryImpl struct {
 	customerCollection *mongo.Collection
 }
 
+func (repo repositoryImpl) DeleteCustomer(idCustomer string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	objectId, _ := primitive.ObjectIDFromHex(idCustomer)
+
+	_, err := repo.customerCollection.DeleteOne(ctx, bson.M{"_id": objectId})
+	return err
+}
+
 func doTimeout() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 10*time.Second)
 }
