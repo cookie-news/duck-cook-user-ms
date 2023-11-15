@@ -43,6 +43,10 @@ func (r repositoryImpl) GetCustomerByField(fieldName string, value string) (cust
 	var customerModel Customer
 
 	filter := bson.M{fieldName: value}
+	if fieldName == "_id" {
+		id, _ := primitive.ObjectIDFromHex(fieldName)
+		filter = bson.M{fieldName: id}
+	}
 
 	err = r.customerCollection.FindOne(ctx, filter).Decode(&customerModel)
 	if err != nil {
