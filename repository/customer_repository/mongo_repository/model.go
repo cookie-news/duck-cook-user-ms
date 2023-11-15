@@ -13,7 +13,6 @@ type Customer struct {
 	UpdatedAt time.Time          `bson:"updatedAt"`
 	Email     string             `bson:"email"`
 	User      string             `bson:"user"`
-	Pass      string             `bson:"pass"`
 	Name      string             `bson:"name"`
 }
 
@@ -23,7 +22,6 @@ func (customer Customer) ToEntityCustomerResponse() entity.CustomerResponse {
 		ID:    customer.ID.Hex(),
 		Email: customer.Email,
 		User:  customer.User,
-		Pass:  customer.Pass,
 		Name:  customer.Name,
 	}
 }
@@ -35,7 +33,6 @@ func (Customer) FromEntity(customer entity.Customer) *Customer {
 		ID:    id,
 		Email: customer.Email,
 		User:  customer.User,
-		Pass:  customer.Pass,
 		Name:  customer.Name,
 	}
 }

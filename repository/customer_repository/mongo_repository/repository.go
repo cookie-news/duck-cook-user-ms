@@ -14,7 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type repositoryImpl struct {
@@ -89,13 +88,7 @@ func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.Custome
 
 	var customerModel Customer
 	customerModel = *customerModel.FromEntity(customer)
-	passHash, err := HashPassword(customer.Pass)
 
-	if err != nil {
-		return customerModel.ToEntityCustomerResponse(), err
-	}
-
-	customerModel.Pass = passHash
 	res, err := r.customerCollection.InsertOne(ctx, &customerModel)
 
 	if err != nil {
@@ -128,11 +121,6 @@ func (r repositoryImpl) CreateCustomer(customer entity.Customer) (entity.Custome
 	customerModel.ID = res.InsertedID.(primitive.ObjectID)
 
 	return customerModel.ToEntityCustomerResponse(), nil
-}
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
 }
 
 func New(mongoDb mongo.Database) repository.CustomerRepository {
