@@ -35,6 +35,13 @@ func (server *Server) Start(port string) error {
 	})
 
 	r.Use(func(ctx *gin.Context) {
+		switch ctx.FullPath() {
+		case
+			"/v1/customer/:fieldName/:value":
+			ctx.Next()
+			return
+		}
+
 		auth := ctx.GetHeader("authorization")
 
 		client := resty.New()
