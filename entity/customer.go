@@ -7,6 +7,7 @@ type Customer struct {
 	Email string                `form:"email" binding:"required"`
 	User  string                `form:"user" binding:"required"`
 	Name  string                `form:"name" binding:"required"`
+	Pass  string                `form:"pass" binding:"required"`
 	Image *multipart.FileHeader `form:"image"`
 }
 

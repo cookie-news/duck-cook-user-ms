@@ -3,6 +3,7 @@ package usecase
 import (
 	"duck-cook-user-ms/api/repository"
 	"duck-cook-user-ms/entity"
+	"duck-cook-user-ms/repository/auth_repository"
 	"errors"
 	"mime/multipart"
 	"regexp"
@@ -21,6 +22,7 @@ type CustomerUsecase interface {
 type customerUsecaseImpl struct {
 	customerRepository repository.CustomerRepository
 	customerStorage    repository.CustomerStorage
+	authRepository     auth_repository.AuthRepository
 }
 
 func (usecase customerUsecaseImpl) DeleteCustomer(idCustomer string) error {
@@ -45,6 +47,12 @@ func (usecase customerUsecaseImpl) ListCustomers() (customersList []entity.Custo
 
 func (usecase customerUsecaseImpl) CreateCustomer(customer entity.Customer) (customerResult entity.CustomerResponse, err error) {
 	err = usecase.Validate(customer)
+
+	if err != nil {
+		return
+	}
+
+	err = usecase.authRepository.CreateUser(customer.User, customer.Pass, customer.Email)
 
 	if err != nil {
 		return
@@ -123,9 +131,13 @@ func checkEmail(email string) bool {
 	return regex.MatchString(email)
 }
 
-func NewCustomerUseCase(customerRepository repository.CustomerRepository, customerStorage repository.CustomerStorage) CustomerUsecase {
+func NewCustomerUseCase(
+	customerRepository repository.CustomerRepository,
+	customerStorage repository.CustomerStorage,
+	authRepository auth_repository.AuthRepository) CustomerUsecase {
 	return &customerUsecaseImpl{
 		customerRepository,
 		customerStorage,
+		authRepository,
 	}
 }

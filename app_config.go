@@ -5,9 +5,9 @@ import (
 	"duck-cook-user-ms/controller"
 	"duck-cook-user-ms/pkg/mongodb"
 	"duck-cook-user-ms/pkg/supabase"
+	"duck-cook-user-ms/repository/auth_repository"
 	mongodb_repository "duck-cook-user-ms/repository/customer_repository/mongo_repository"
 	"duck-cook-user-ms/repository/customer_repository/supabase_repository"
-	"fmt"
 
 	"duck-cook-user-ms/usecase"
 
@@ -26,10 +26,9 @@ func NewAppConfig() AppConfig {
 
 	repositoryCustomer := mongodb_repository.New(mongoDb)
 	storageCustomer := supabase_repository.New(supabase)
+	authRepository := auth_repository.NewAuthRepository()
 
-	fmt.Println(storageCustomer)
-
-	customerUsecase := usecase.NewCustomerUseCase(repositoryCustomer, storageCustomer)
+	customerUsecase := usecase.NewCustomerUseCase(repositoryCustomer, storageCustomer, authRepository)
 
 	controller := controller.NewController(customerUsecase)
 	server := api.NewServer(controller)
