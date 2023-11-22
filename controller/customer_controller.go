@@ -21,17 +21,19 @@ func (c *Controller) CreateCustomerHandle(ctx *gin.Context) {
 		return
 	}
 
-	url, err := c.customerUsecase.UploadImage(*customer.Image, customer.User)
+	if customer.Image != nil {
+		url, err := c.customerUsecase.UploadImage(*customer.Image, customer.User)
 
-	if err != nil {
-		c.customerUsecase.DeleteCustomer(customer.ID)
-		ctx.JSON(http.StatusCreated, gin.H{
-			"customer": customer,
-			"error":    "An error occurred while saving your profile photo, but the username was created successfully",
-		})
+		if err != nil {
+			c.customerUsecase.DeleteCustomer(customer.ID)
+			ctx.JSON(http.StatusCreated, gin.H{
+				"customer": customer,
+				"error":    "An error occurred while saving your profile photo, but the username was created successfully",
+			})
+		}
+	
+		customerResponse.Image = url
 	}
-
-	customerResponse.Image = url
 	ctx.JSON(http.StatusCreated, customerResponse)
 }
 
