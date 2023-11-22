@@ -2,11 +2,9 @@ package api
 
 import (
 	"duck-cook-user-ms/controller"
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-resty/resty/v2"
 )
 
 type Server struct {
@@ -32,34 +30,6 @@ func (server *Server) Start(port string) error {
 		}
 
 		ctx.Next()
-	})
-
-	r.Use(func(ctx *gin.Context) {
-		switch ctx.FullPath() {
-		case
-			"/v1/customer/:fieldName/:value",
-			"/v1/customer":
-			ctx.Next()
-			return
-		}
-
-		auth := ctx.GetHeader("authorization")
-
-		client := resty.New()
-		client.BaseURL = os.Getenv("URL_AUTH")
-
-		resp, _ := client.R().
-			SetHeader("authorization", auth).
-			Post("/v1/auth/verify-jwt")
-
-		if resp.StatusCode() == http.StatusNoContent {
-			ctx.Next()
-			return
-		} else {
-			ctx.String(resp.StatusCode(), resp.String())
-			ctx.Abort()
-			return
-		}
 	})
 
 	v1 := r.Group("/v1")
