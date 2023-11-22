@@ -58,9 +58,9 @@ func (server *Server) Start(port string) error {
 	{
 		customer := v1.Group("/customer")
 		{
-			customer.GET("/", server.controller.ListCustomersHandle)
+			customer.GET("", server.controller.ListCustomersHandle)
 			customer.GET("/:fieldName/:value", server.controller.GetUserByFieldHandle)
-			customer.POST("/", server.controller.CreateCustomerHandle)
+			customer.POST("", server.controller.CreateCustomerHandle)
 		}
 	}
 
