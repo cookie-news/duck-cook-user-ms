@@ -3,6 +3,7 @@ package supabase_repository
 import (
 	"duck-cook-user-ms/api/repository"
 	"mime/multipart"
+	"net/http"
 	"os"
 
 	storage_go "github.com/supabase-community/storage-go"
@@ -33,6 +34,16 @@ func (c *storageImpl) UploadImage(image multipart.FileHeader, user string) (stri
 func (c *storageImpl) GetPublicUrl(filename string) string {
 
 	result := c.client.GetPublicUrl(os.Getenv("SUPABASE_BUCKET_ID"), filename)
+
+	resp, err := http.Get(result.SignedURL)
+	if err != nil {
+		return ""
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return ""
+	}
+
 	return result.SignedURL
 }
 
